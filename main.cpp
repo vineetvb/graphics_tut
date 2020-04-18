@@ -110,21 +110,15 @@ int main() {
       0.5f, -0.5f, 0.0f,  // bottom right
       -0.5f, -0.5f, 0.0f,  // bottom left
       -0.5f, 0.5f, 0.0f   // top left
+          - 0.75f, -0.75f, 0.0f   // top left
   };
   unsigned int indices[] = {  // note that we start from 0!
       0, 1, 3,  // first Triangle
-      1, 2, 3   // second Triangle
   };
 
-  /* VAO
-   * -------------------------------------------------------------------------
-   * A Vertex Array Object (VAO) is an object which contains one or more
-   * Vertex Buffer Object and is designed to store the information for a
-   * complete rendered object.
-   */
-  unsigned int vao; // This int is the handle to the VAO.
-  glGenVertexArrays(1, &vao); // First arg is how many VAOs are to be generated.
-  glBindVertexArray(vao);
+  unsigned int indices_bottom[] = {  // note that we start from 0!
+      1, 2, 3   // second Triangle
+  };
 
   /* VBO
    * -------------------------------------------------------------------------
@@ -159,23 +153,71 @@ int main() {
                indices,
                GL_STATIC_DRAW);
 
+  unsigned int ebo_bottom;
+  glGenBuffers(1, &ebo_bottom);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_bottom);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+               sizeof(indices_bottom),
+               indices_bottom,
+               GL_STATIC_DRAW);
+
+  /* VAO
+ * -------------------------------------------------------------------------
+ * A Vertex Array Object (VAO) is an object which contains one or more
+ * Vertex Buffer Object and is designed to store the information for a
+ * complete rendered object. Each VAO is to be configured separately.
+ */
+  unsigned int vao[2]; // This int is the handle to the VAOs array.
+  glGenVertexArrays(2, vao); // First arg is how many VAOs are to be generated.
+
+
+  // Setup VAO-0
+  glBindVertexArray(vao[0]);
   /* Tell OpenGL how to interpret the VAO elements.*/
   // Find which input is the interpretation for. This looks up the index of
   // the input attribute location using its name.
   unsigned int
       positionAttribLocation = glGetAttribLocation(shaderProgram, "aPos");
   // VertexAttribPointer
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glEnableVertexAttribArray(positionAttribLocation);
   glVertexAttribPointer(positionAttribLocation,
                         3,                  // size of each vertex attrib
                         GL_FLOAT,           // type
                         GL_FALSE,           // should this data be normalized?
                         3 * sizeof(float),  // size in bytes of each vertex
                         (void*) 0);        // offset
-  // Enable this attribute.
-  glEnableVertexAttribArray(positionAttribLocation);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 
+  // Release VAO binding.
+  glBindVertexArray(0);
+
+  // Setup VAO-1
+  glBindVertexArray(vao[1]);
+  /* Tell OpenGL how to interpret the VAO elements.*/
+  // Find which input is the interpretation for. This looks up the index of
+  // the input attribute location using its name.
+  // VertexAttribPointer
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glEnableVertexAttribArray(positionAttribLocation);
+  glVertexAttribPointer(positionAttribLocation,
+                        3,                  // size of each vertex attrib
+                        GL_FLOAT,           // type
+                        GL_FALSE,           // should this data be normalized?
+                        3 * sizeof(float),  // size in bytes of each vertex
+                        (void*) 0);        // offset
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_bottom);
+
+  // ** Method to bind VAOs is :
+  // Bind VAO to active
+  // BindBuffer VBO to active ARRAY
+  // Enable VBO
+  // Interpret VBO pointer
+  // Bindbuffer EBO to active ELEMENT_ARRAY
+  // Release VAO binding
 
   // Render loop
+  int i = 0;
   while (!glfwWindowShouldClose(window)) {
     processInput(window);
 
@@ -183,7 +225,7 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(shaderProgram);
-    glBindVertexArray(vao);
+    glBindVertexArray(vao[i % 2]);
 
     // seeing as we only have a single vao there's no need to bind it every
     // time, but we'll do so to keep things a bit more organized
@@ -195,10 +237,12 @@ int main() {
     // -------------------------------------------------------------------------------
     glfwSwapBuffers(window);
     glfwPollEvents();
+    ++i;
+
   }
 
   // optional: de-allocate all resources once they've outlived their purpose:
-  glDeleteVertexArrays(1, &vao);
+  glDeleteVertexArrays(2, vao);
   glDeleteBuffers(1, &vbo);
   glDeleteBuffers(1, &ebo);
 
