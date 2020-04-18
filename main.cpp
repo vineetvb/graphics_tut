@@ -27,19 +27,6 @@ void main(){
 }
 )END";
 
-//const char *vertexShaderSource = "#version 330 core\n"
-//                                 "layout (location = 0) in vec3 aPos;\n"
-//                                 "void main()\n"
-//                                 "{\n"
-//                                 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-//                                 "}\0";
-//const char *fragmentShaderSource = "#version 330 core\n"
-//                                   "out vec4 FragColor;\n"
-//                                   "void main()\n"
-//                                   "{\n"
-//                                   "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-//                                   "}\n\0";
-
 int main() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -125,54 +112,69 @@ int main() {
             1, 2, 3   // second Triangle
     };
 
-
-    /*
-     * A Vertex Array Object (VAO) is an object which contains one or more Vertex Buffer Objects
-     * and is designed to store the information for a complete rendered object.
+    /* VAO
+     * -------------------------------------------------------------------------
+     * A Vertex Array Object (VAO) is an object which contains one or more
+     * Vertex Buffer Object and is designed to store the information for a
+     * complete rendered object.
      */
     unsigned int vao; // This int is the handle to the VAO.
     glGenVertexArrays(1, &vao); // First arg is how many VAOs are to be generated.
     glBindVertexArray(vao);
 
-    /*
-     * A Vertex Buffer Object (VBO) is a memory buffer in the high speed memory of your video card
-     * designed to hold information about vertices.
+    /* VBO
+     * -------------------------------------------------------------------------
+     * A Vertex Buffer Object (VBO) is a memory buffer in the high speed memory
+     * of your video card designed to hold information about vertices.
+     * OpenGL has many types of buffer objects and the buffer type of a
+     * vertex buffer object is GL_ARRAY_BUFFER.
      */
-    // 2. Then bind and set vertex buffer(s)
+    //Create a new buffer and bind it to the vbo int handle.
     unsigned int vbo;
     glGenBuffers(1, &vbo);
+    // Bind this buffer to be the current/active GL_ARRAY_BUFFER.
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    // Push data from CPU object "vertices" to current/active GL_ARRAY_BUFFER.
+    // The last arg, GL_STATIC_DRAW specifies to the graphics card how
+    // to internally manage the given data.
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    /* EBO
+     * -------------------------------------------------------------------------
+     * A Element Buffer Object (EBO) is a memory buffer to support
+     * indexed drawing. The buffer object is of type GL_ELEMENT_ARRAY_BUFFER and
+     * stores indices (as unsigned int) of the triangles to be drawn. The
+     * indices are in to the VBO. Binding and data pushing semantics are same as
+     * VBO.
+     */
     unsigned int ebo;
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
-
+    /* Tell OpenGL how to interpret the VAO elements.*/
+    // Find which input is the interpretation for. This looks up the index of
+    // the input attribute location using its name.
     unsigned int positionAttribLocation = glGetAttribLocation(shaderProgram, "aPos");
+    // VertexAttribPointer
+    glVertexAttribPointer(positionAttribLocation,
+        3,                  // size of each vertex attrib
+        GL_FLOAT,           // type
+        GL_FALSE,           // should this data be normalized?
+        3 * sizeof(float),  // size in bytes of each vertex
+        (void *) 0);        // offset
+    // Enable this attribute.
     glEnableVertexAttribArray(positionAttribLocation);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
 
-
-    // uncomment this call to draw in wireframe polygons.
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window)) {
-        // input
-        // -----
         processInput(window);
 
-        // render
-        // ------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // draw our first triangle
         glUseProgram(shaderProgram);
         glBindVertexArray(
                 vao); // seeing as we only have a single vao there's no need to bind it every time, but we'll do so to keep things a bit more organized
@@ -187,13 +189,11 @@ int main() {
     }
 
     // optional: de-allocate all resources once they've outlived their purpose:
-    // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
     glDeleteBuffers(1, &ebo);
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
-    // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
 }
