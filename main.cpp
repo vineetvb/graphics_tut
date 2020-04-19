@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <thread>
+#include <cmath>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
   glViewport(0, 0, width, height);
@@ -25,10 +26,10 @@ void main(){
 )END";
 
 const char* fragmentShaderSource = R"END(#version 330 core
-in vec2 vertexColor;
+uniform vec2 timeColor;
 out vec4 FragColor;
 void main(){
-    FragColor = vec4(vertexColor, 0.0, 1.0);
+    FragColor = vec4(timeColor, 0.0, 1.0);
 }
 )END";
 
@@ -223,11 +224,17 @@ int main() {
 
   // Render loop
   int i = 0;
+  int timeColorAttribLocation = glGetUniformLocation(shaderProgram, "timeColor");
   while (!glfwWindowShouldClose(window)) {
     processInput(window);
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    auto time = std::chrono::system_clock::now();
+    auto seconds = time.time_since_epoch().count() % 256;
+    auto timeColor1 = std::sin(static_cast<float>(seconds) / 256.0);
+    glUniform2f(timeColorAttribLocation, timeColor1, 0.5);
 
     glUseProgram(shaderProgram);
     glBindVertexArray(vao[i % 2]);
@@ -236,14 +243,11 @@ int main() {
     // time, but we'll do so to keep things a bit more organized
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-    // glBindVertexArray(0); // no need to unbind it every time
 
-    // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-    // -------------------------------------------------------------------------------
     glfwSwapBuffers(window);
     glfwPollEvents();
     ++i;
-    std::this_thread::sleep_for(std::chrono_literals::operator""s(1));
+    std::this_thread::sleep_for(std::chrono_literals::operator""ms(200));
   }
 
   // optional: de-allocate all resources once they've outlived their purpose:
