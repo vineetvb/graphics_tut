@@ -1,8 +1,10 @@
+#include <chrono>
 #include <iostream>
 #include <string>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <thread>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
   glViewport(0, 0, width, height);
@@ -15,15 +17,18 @@ void processInput(GLFWwindow* window) {
 
 const char* vertexShaderSource = R"END(#version 330 core
 layout (location = 0) in vec3 aPos;
+out vec2 vertexColor;
 void main(){
     gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+    vertexColor = vec2(aPos.xy);
 }
 )END";
 
 const char* fragmentShaderSource = R"END(#version 330 core
+in vec2 vertexColor;
 out vec4 FragColor;
 void main(){
-    FragColor = vec4(1.0, 0.5, 0.2, 1.0);
+    FragColor = vec4(vertexColor, 0.0, 1.0);
 }
 )END";
 
@@ -238,7 +243,7 @@ int main() {
     glfwSwapBuffers(window);
     glfwPollEvents();
     ++i;
-
+    std::this_thread::sleep_for(std::chrono_literals::operator""s(1));
   }
 
   // optional: de-allocate all resources once they've outlived their purpose:
