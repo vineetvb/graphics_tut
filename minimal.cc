@@ -1,18 +1,15 @@
-
 #include <chrono>
 #include <iostream>
 #include <string>
-#include <stdexcept>
-#include <vector>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <thread>
 #include <cmath>
+#include "shader.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-
-#include "shader.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
   glViewport(0, 0, width, height);
@@ -22,10 +19,6 @@ void processInput(GLFWwindow* window) {
     glfwSetWindowShouldClose(window, true);
 }
 
-/*
- * Create window and manage GLAD init. Binds OpenGL current context to this
- * window.
- */
 struct DestroyglfwWindow {
 
   void operator()(GLFWwindow* ptr) {
@@ -65,92 +58,98 @@ std::unique_ptr<GLFWwindow, DestroyglfwWindow> CreateWindow() {
   return std::move(window);
 }
 
-void Create2DPolygonAO(const std::vector<float>& vertices,
-                      const std::vector<unsigned int>& indices,
-                      unsigned int& vao,
-                      unsigned int& vbo,
-                      unsigned int& ebo) {
+void CreatePolygon(  unsigned int& vao){
+
+  // set up vertex data (and buffer(s)) and configure vertex attributes
+  float vertices[] = {
+     0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+     0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
+  };
+  unsigned int indices[] = {
+      0, 1, 3,  // first Triangle
+  };
+
+  unsigned int vbo;
   glGenBuffers(1, &vbo);
-  glGenBuffers(1, &ebo);
-
-
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER,
-               vertices.size(),
-               vertices.data(),
-               GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+  unsigned int ebo;
+  glGenBuffers(1, &ebo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-               indices.size(),
-               indices.data(),
+               sizeof(indices),
+               indices,
                GL_STATIC_DRAW);
 
-  //unsigned int vao;
+
   glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-  unsigned int positionAttribLocation = 0;
-  unsigned int colorAttribLocation = 1;
-
+  glBindVertexArray(vao);
+  unsigned int
+      positionAttribLocation = 0;
+  // VertexAttribPointer
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glEnableVertexAttribArray(positionAttribLocation);
-  glEnableVertexAttribArray(colorAttribLocation);
-
   glVertexAttribPointer(positionAttribLocation,
                         3,
                         GL_FLOAT,
                         GL_FALSE,
-                        6 * sizeof(float),
+                        8 * sizeof(float),
                         (void*) 0);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo); // necessary?
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   glBindVertexArray(0);
 }
 
-int main() {
 
-  // Create Windowing Object, includes current OpenGL context binding.
+int main() {
   auto window = CreateWindow();
   glViewport(/*lower left corner*/0, 0, /*width x height*/800, 600);
 
   Shader shader("shaders/vertex.glsl", "shaders/fragment.glsl");
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
-  std::vector<float> vertices = {
+  float vertices[] = {
      0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
      0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
     -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
     -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
   };
-  std::vector<unsigned int> indices = {  // note that we start from 0!
+  unsigned int indices[] = {
       0, 1, 3,  // first Triangle
   };
 
-  unsigned int polygon1, vbo, ebo;
-  Create2DPolygonAO(vertices, indices, polygon1, vbo, ebo);
+  unsigned int vao;
+  CreatePolygon(vao);
 
-  shader.use();
 
   while (!glfwWindowShouldClose(window.get())) {
     processInput(window.get());
 
-    glClearColor(0.2f, 1.0f, 0.3f, 1.0f);
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+
     shader.use();
+    glBindVertexArray(vao);
 
-    glBindVertexArray(polygon1);
-
+    // seeing as we only have a single vao there's no need to bind it every
+    // time, but we'll do so to keep things a bit more organized
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
 
     glfwSwapBuffers(window.get());
     glfwPollEvents();
+
   }
 
-  glDeleteVertexArrays(1, &polygon1);
-  glDeleteBuffers(1, &vbo);
-  glDeleteBuffers(1, &ebo);
+  // optional: de-allocate all resources once they've outlived their purpose:
+  glDeleteVertexArrays(1, &vao);
+//  glDeleteBuffers(1, &vbo);
+//  glDeleteBuffers(1, &ebo);
+
+  // glfw: terminate, clearing all previously allocated GLFW resources.
   glfwTerminate();
   return 0;
 }

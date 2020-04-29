@@ -210,7 +210,7 @@ int main() {
                         8 * sizeof(float),  // size in bytes of each vertex
                         (void*) (3 * sizeof(float)));        // offset
   glVertexAttribPointer(texAttribLocation,
-                        3,                  // size of each vertex attrib
+                        2,                  // size of each vertex attrib
                         GL_FLOAT,           // type
                         GL_FALSE,           // should this data be normalized?
                         8 * sizeof(float),  // size in bytes of each vertex
