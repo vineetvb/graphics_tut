@@ -20,19 +20,30 @@ void processInput(GLFWwindow* window) {
 }
 
 const char* vertexShaderSource = R"END(#version 330 core
-layout (location = 0) in vec3 aPos;
-out vec2 vertexColor;
+layout (location = 0) in vec3 inPos;
+layout (location = 1) in vec3 inColor;
+layout (location = 2) in vec2 inTexCoord;
+
+out vec3 color;
+out vec2 texCoord;
 void main(){
-    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
-    vertexColor = vec2(aPos.xy);
+    gl_Position = vec4(inPos, 1.0);
+    color = inColor;
+    texCoord = inTexCoord;
 }
 )END";
 
 const char* fragmentShaderSource = R"END(#version 330 core
+in vec2 texCoord;
+in vec3 color;
 uniform vec2 timeColor;
 out vec4 FragColor;
+
+uniform sampler2D atexture;
+
 void main(){
-    FragColor = vec4(timeColor, 0.0, 1.0);
+  vec4 texColor = texture(atexture, texCoord);
+  FragColor = texColor;
 }
 )END";
 
@@ -61,6 +72,9 @@ int main() {
     std::cout << "Failed to init GLAD" << std::endl;
     return -1;
   }
+//   glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   // Communicate  viewport size to opengl.
   glViewport(/*lower left corner*/0, 0, /*width x height*/800, 600);
@@ -115,18 +129,17 @@ int main() {
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   float vertices[] = {
-     0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-     0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
+      0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // 0 top right
+      0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // 1 bottom right
+      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // 2 bottom left
+      -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.2f, 0.9f,    // 3 top left
+      0.0f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f    // 4 middle top
   };
   unsigned int indices[] = {  // note that we start from 0!
       0, 1, 3,  // first Triangle
+  0, 1, 2
   };
 
-  unsigned int indices_bottom[] = {  // note that we start from 0!
-      1, 2, 3   // second Triangle
-  };
 
   /* VBO
    * -------------------------------------------------------------------------
@@ -161,77 +174,60 @@ int main() {
                indices,
                GL_STATIC_DRAW);
 
-  unsigned int ebo_bottom;
-  glGenBuffers(1, &ebo_bottom);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_bottom);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-               sizeof(indices_bottom),
-               indices_bottom,
-               GL_STATIC_DRAW);
-
-  /* VAO
- * -------------------------------------------------------------------------
- * A Vertex Array Object (VAO) is an object which contains one or more
- * Vertex Buffer Object and is designed to store the information for a
- * complete rendered object. Each VAO is to be configured separately.
- */
-  unsigned int vao[2]; // This int is the handle to the VAOs array.
-  glGenVertexArrays(2, vao); // First arg is how many VAOs are to be generated.
+  /* A Vertex Array Object (VAO) is an object which contains one or more
+  * Vertex Buffer Object and is designed to store the information for a
+  * complete rendered object. Each VAO is to be configured separately.
+  */
+  unsigned int vao; // This int is the handle to the VAOs array.
+  glGenVertexArrays(1, &vao); // First arg is how many VAOs are to be generated.
 
 
-  // Setup VAO-0
-  glBindVertexArray(vao[0]);
+  // Setup VAO
+  glBindVertexArray(vao);
   /* Tell OpenGL how to interpret the VAO elements.*/
   // Find which input is the interpretation for. This looks up the index of
   // the input attribute location using its name.
   unsigned int
-      positionAttribLocation = glGetAttribLocation(shaderProgram, "aPos");
+      positionAttribLocation = glGetAttribLocation(shaderProgram, "inPos");
+  unsigned int colorAttribLocation = glGetAttribLocation(shaderProgram, "inColor");
+ unsigned int texAttribLocation = glGetAttribLocation(shaderProgram, "inTexCoord");
+
   // VertexAttribPointer
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glEnableVertexAttribArray(positionAttribLocation);
+  glEnableVertexAttribArray(colorAttribLocation);
+  glEnableVertexAttribArray(texAttribLocation);
   glVertexAttribPointer(positionAttribLocation,
                         3,                  // size of each vertex attrib
                         GL_FLOAT,           // type
                         GL_FALSE,           // should this data be normalized?
                         8 * sizeof(float),  // size in bytes of each vertex
                         (void*) 0);        // offset
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+  glVertexAttribPointer(colorAttribLocation,
+                        3,                  // size of each vertex attrib
+                        GL_FLOAT,           // type
+                        GL_FALSE,           // should this data be normalized?
+                        8 * sizeof(float),  // size in bytes of each vertex
+                        (void*) (3 * sizeof(float)));        // offset
+  glVertexAttribPointer(texAttribLocation,
+                        3,                  // size of each vertex attrib
+                        GL_FLOAT,           // type
+                        GL_FALSE,           // should this data be normalized?
+                        8 * sizeof(float),  // size in bytes of each vertex
+                        (void*) (6 * sizeof(float)));        // offset
 
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   // Release VAO binding.
   glBindVertexArray(0);
 
-  // Setup VAO-1
-  glBindVertexArray(vao[1]);/* Tell OpenGL how to interpret the VAO elements.*/
-  // Find which input is the interpretation for. This looks up the index of
-  // the input attribute location using its name.
-  // VertexAttribPointer
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glEnableVertexAttribArray(positionAttribLocation);
-  glVertexAttribPointer(positionAttribLocation,
-                        3,                  // size of each vertex attrib
-                        GL_FLOAT,           // type
-                        GL_FALSE,           // should this data be normalized?
-                        8 * sizeof(float),  // size in bytes of each vertex
-                        (void*) 0);        // offset
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_bottom);
-
-  // ** Method to bind VAOs is :
-  // Bind VAO to active
-  // BindBuffer VBO to active ARRAY
-  // Enable VBO
-  // Interpret VBO pointer
-  // Bindbuffer EBO to active ELEMENT_ARRAY
-  // Release VAO binding
-
   // Texturing
   int width, height, nrChannels;
-  unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
-
+  unsigned char
+      * data = stbi_load("../window.png", &width, &height, &nrChannels, 0);
   unsigned int texture;
   glGenTextures(1, &texture); // first arg is how many textures are to be generated
 
   glBindTexture(GL_TEXTURE_2D, texture);
-
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -242,20 +238,27 @@ int main() {
                  0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-//    stbi_image_free(data);
+    stbi_image_free(data);
+  } else {
+    std::cout << "Failed to load texture" << std::endl;
   }
-  else{
-      std::cout << "Failed to load texture" << std::endl;
-  }
+
+      glUseProgram(shaderProgram);
+
+    glUniform1i(glGetUniformLocation(fragmentShader, "atexture"), 0);
 
   // Render loop
   int i = 0;
-  int timeColorAttribLocation = glGetUniformLocation(shaderProgram, "timeColor");
+  int timeColorAttribLocation =
+      glGetUniformLocation(shaderProgram, "timeColor");
   while (!glfwWindowShouldClose(window)) {
     processInput(window);
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
     // Update uniform2f with time.
     auto time = std::chrono::system_clock::now();
@@ -264,21 +267,20 @@ int main() {
     glUniform2f(timeColorAttribLocation, timeColor1, 0.5);
 
     glUseProgram(shaderProgram);
-    glBindVertexArray(vao[i % 2]);
+    glBindVertexArray(vao);
 
     // seeing as we only have a single vao there's no need to bind it every
     // time, but we'll do so to keep things a bit more organized
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-
     glfwSwapBuffers(window);
     glfwPollEvents();
     ++i;
-    std::this_thread::sleep_for(std::chrono_literals::operator""ms(200));
+    std::this_thread::sleep_for(std::chrono_literals::operator ""ms(50));
   }
 
   // optional: de-allocate all resources once they've outlived their purpose:
-  glDeleteVertexArrays(2, vao);
+  glDeleteVertexArrays(1, &vao);
   glDeleteBuffers(1, &vbo);
   glDeleteBuffers(1, &ebo);
 
