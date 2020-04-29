@@ -67,20 +67,23 @@ void CreatePolygon(  unsigned int& vao){
     -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
     -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
   };
+    std::cout << "SOV " << sizeof(vertices) << std::endl;
+
   unsigned int indices[] = {
       0, 1, 3,  // first Triangle
   };
+   std::cout << "SOV " << sizeof(indices) << std::endl;
 
   unsigned int vbo;
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, 4 * 8 * 4, vertices, GL_STATIC_DRAW);
 
   unsigned int ebo;
   glGenBuffers(1, &ebo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-               sizeof(indices),
+               3 * 4,
                indices,
                GL_STATIC_DRAW);
 

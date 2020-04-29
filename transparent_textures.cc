@@ -73,16 +73,18 @@ void Create2DPolygonAO(const std::vector<float>& vertices,
   glGenBuffers(1, &vbo);
   glGenBuffers(1, &ebo);
 
-
+  std::cout << "SOV " << vertices.size() * sizeof(float) << std::endl;
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER,
-               vertices.size(),
+               vertices.size() * sizeof(float),
                vertices.data(),
                GL_STATIC_DRAW);
 
+   std::cout << "SOI " << indices.size() * sizeof(unsigned int) << std::endl;
+
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-               indices.size(),
+               indices.size() * sizeof(unsigned int),
                indices.data(),
                GL_STATIC_DRAW);
 
