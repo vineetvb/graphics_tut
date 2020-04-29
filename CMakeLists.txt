@@ -14,6 +14,7 @@ find_package(PkgConfig REQUIRED)
 
 include_directories(${GLFW_INCLUDE_DIRS})
 include_directories(glad/include)
+include_directories(glm)
 
 target_link_libraries(graphics_tut glfw ${GLFW_LIBRARIES}  ${CMAKE_DL_LIBS})
 target_link_libraries(texture_main glfw ${GLFW_LIBRARIES}  ${CMAKE_DL_LIBS})

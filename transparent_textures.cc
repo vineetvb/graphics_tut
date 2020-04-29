@@ -9,6 +9,11 @@
 #include <thread>
 #include <cmath>
 
+#include "glm/vec3.hpp" // glm::vec3
+#include "glm/vec4.hpp" // glm::vec4
+#include "glm/mat4x4.hpp" // glm::mat4
+#include "glm/gtc/matrix_transform.hpp" // glm::translate, glm::rotate, glm::scale, glm::perspective
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -65,22 +70,25 @@ std::unique_ptr<GLFWwindow, DestroyglfwWindow> CreateWindow() {
   return std::move(window);
 }
 
+struct Vertex {
+  glm::vec3 Position;
+  glm::vec3 Normal;
+  glm::vec2 TexCoords;
+};
+
 void Create2DPolygonAO(const std::vector<float>& vertices,
-                      const std::vector<unsigned int>& indices,
-                      unsigned int& vao,
-                      unsigned int& vbo,
-                      unsigned int& ebo) {
+                       const std::vector<unsigned int>& indices,
+                       unsigned int& vao,
+                       unsigned int& vbo,
+                       unsigned int& ebo) {
   glGenBuffers(1, &vbo);
   glGenBuffers(1, &ebo);
 
-  std::cout << "SOV " << vertices.size() * sizeof(float) << std::endl;
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER,
                vertices.size() * sizeof(float),
                vertices.data(),
                GL_STATIC_DRAW);
-
-   std::cout << "SOI " << indices.size() * sizeof(unsigned int) << std::endl;
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
@@ -90,7 +98,7 @@ void Create2DPolygonAO(const std::vector<float>& vertices,
 
   //unsigned int vao;
   glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+  glBindVertexArray(vao);
 
   unsigned int positionAttribLocation = 0;
   unsigned int colorAttribLocation = 1;
@@ -103,7 +111,7 @@ void Create2DPolygonAO(const std::vector<float>& vertices,
                         3,
                         GL_FLOAT,
                         GL_FALSE,
-                        6 * sizeof(float),
+                        8 * sizeof(float),
                         (void*) 0);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo); // necessary?
@@ -120,10 +128,10 @@ int main() {
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   std::vector<float> vertices = {
-     0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-     0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
+      0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // top right
+      0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // bottom right
+      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // bottom left
+      -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f    // top left
   };
   std::vector<unsigned int> indices = {  // note that we start from 0!
       0, 1, 3,  // first Triangle
