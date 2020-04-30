@@ -8,7 +8,7 @@
 #include "glm/vec3.hpp"
 #include "glm/vec2.hpp"
 #include "stb_image.h"
-
+#include "texture.h"
 
 class Mesh {
  public:
@@ -21,6 +21,8 @@ class Mesh {
   static std::unique_ptr<Mesh> Create(const std::vector<Vertex>& vertices,
       const std::vector<unsigned int>& indices);
 
+  bool SetTextureFromImage(const std::string& image_path);
+
   inline int id() const {return vao_; }
   ~Mesh();
  private:
@@ -30,6 +32,7 @@ class Mesh {
 
   std::vector<Vertex> vertices_;
   std::vector<unsigned int> indices_;
+  std::unique_ptr<Texture> texture_;
 };
 
 

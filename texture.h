@@ -3,7 +3,11 @@
 #include <string>
 
 class Texture{
-  Texture(const std::string& image_path);
+ public:
+  Texture(const unsigned char* data, int width, int height, int channels);
+ private:
+    unsigned int texture_;
+
 };
 
 
