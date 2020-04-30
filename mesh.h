@@ -6,6 +6,7 @@
 #include <glad/glad.h>
 
 #include "glm/vec3.hpp"
+#include "glm/vec4.hpp"
 #include "glm/vec2.hpp"
 #include "stb_image.h"
 #include "texture.h"
@@ -13,22 +14,35 @@
 class Mesh {
  public:
   struct Vertex {
-    glm::vec3 Position;
+    glm::vec4 Position;
     glm::vec3 Normal;
     glm::vec2 TexCoords;
   };
 
   static std::unique_ptr<Mesh> Create(const std::vector<Vertex>& vertices,
-      const std::vector<unsigned int>& indices);
+                                      const std::vector<unsigned int>& indices);
 
-  bool SetTextureFromImage(const std::string& image_path, int texture_unit_id = 0);
+  bool SetTextureFromImage(const std::string& image_path,
+                           int texture_unit_id = 0);
   void ActivateTextureUnit(int i) const;
 
-  inline int id() const {return vao_; }
-  const Texture& GetTexture(int i) const{
+  bool AllocateGLBuffers();
+
+  inline int id() const { return vao_; }
+  const Texture& GetTexture(int i) const {
     return *texture_[i].get();
   }
+  const std::vector<Vertex> GetVertices() const { return vertices_; };
+  // Geometric Transformations
+  void Translate(const glm::vec3& tvec);
+  // Rotate CCW about +ve Xaxis.
+  void RotateX(float rx);
+    void RotateY(float ry);
+  void RotateZ(float rz);
+
+
   ~Mesh();
+
  private:
   unsigned int vao_;
   unsigned int vbo_;
@@ -38,6 +52,5 @@ class Mesh {
   std::vector<unsigned int> indices_;
   std::vector<std::unique_ptr<Texture>> texture_;
 };
-
 
 #endif //_MESH_H_

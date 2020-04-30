@@ -80,20 +80,22 @@ int main() {
   Shader shader("shaders/vertex.glsl", "shaders/fragment.glsl");
 
   std::vector<Mesh::Vertex> rectangle = {
-      {glm::vec3{0.5f, 0.5f, 0.0f}, glm::vec3{1.0f, 0.0f, 0.0f},
+      {glm::vec4{0.5f, 0.5f, 0.0f, 1.0f}, glm::vec3{1.0f, 0.0f, 0.0f},
        glm::vec2{1.0f, 1.0f}},
-      {glm::vec3{0.5f, -0.5f, 0.0f}, glm::vec3{0.0f, 1.0f, 0.0f},
+      {glm::vec4{0.5f, -0.5f, 0.0f,1.0f}, glm::vec3{0.0f, 1.0f, 0.0f},
        glm::vec2{1.0f, 0.0f}},   // bottom right
-      {glm::vec3{-0.5f, -0.5f, 0.0f}, glm::vec3{0.0f, 0.0f, 1.0f},
+      {glm::vec4{-0.5f, -0.5f, 0.0f,1.0f}, glm::vec3{0.0f, 0.0f, 1.0f},
        glm::vec2{0.0f, 0.0f}},   // bottom left
-      {glm::vec3{-0.5f, 0.5f, 0.0f}, glm::vec3{1.0f, 1.0f, 0.0f},
+      {glm::vec4{-0.5f, 0.5f, 0.0f,1.0f}, glm::vec3{1.0f, 1.0f, 0.0f},
        glm::vec2{0.0f, 1.0f}}    // top left
   };
   std::vector<unsigned int> indices = {0, 1, 3, 1, 2, 3};
 
   auto mesh = Mesh::Create(rectangle, indices);
-  mesh->SetTextureFromImage("face.jpg");
-  mesh->SetTextureFromImage("wall.jpg", 1);
+  mesh->Translate(glm::vec3(0.5, 0.0, 2.2));
+
+  mesh->SetTextureFromImage("wall.jpg");
+  mesh->SetTextureFromImage("window.png", 1);
 
   shader.Use();
   shader.SetUniformInt("texture0_sampler", 0);
@@ -101,6 +103,9 @@ int main() {
 
   while (!glfwWindowShouldClose(window.get())) {
     processInput(window.get());
+
+    mesh->Translate(glm::vec3(0.01, 0.02, 0.04));
+
     shader.Draw(mesh.get());
     glfwSwapBuffers(window.get());
     glfwPollEvents();

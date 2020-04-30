@@ -8,6 +8,8 @@ add_executable(texture_main texture_basic.cpp glad/src/glad.c stb_image.h)
 add_executable(transparent_textures transparent_textures.cc mesh.cc texture.cc glad/src/glad.c stb_image.h)
 add_executable(minimal minimal.cc glad/src/glad.c stb_image.h)
 
+add_executable(mesh_play mesh_play.cc glad/src/glad.c stb_image.h)
+add_library(graphics_ds mesh.cc texture.cc shader.h)
 
 find_package(glfw3 3.3 REQUIRED)
 find_package(PkgConfig REQUIRED)
@@ -20,3 +22,4 @@ target_link_libraries(graphics_tut glfw ${GLFW_LIBRARIES}  ${CMAKE_DL_LIBS})
 target_link_libraries(texture_main glfw ${GLFW_LIBRARIES}  ${CMAKE_DL_LIBS})
 target_link_libraries(transparent_textures glfw ${GLFW_LIBRARIES}  ${CMAKE_DL_LIBS})
 target_link_libraries(minimal glfw ${GLFW_LIBRARIES}  ${CMAKE_DL_LIBS})
+target_link_libraries(mesh_play graphics_ds glfw ${GLFW_LIBRARIES}  ${CMAKE_DL_LIBS})
