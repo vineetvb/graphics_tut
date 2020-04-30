@@ -92,7 +92,12 @@ int main() {
   std::vector<unsigned int> indices = {0, 1, 3, 1, 2, 3};
 
   auto mesh = Mesh::Create(rectangle, indices);
-  mesh->SetTextureFromImage("wall.jpg");
+  mesh->SetTextureFromImage("face.jpg");
+  mesh->SetTextureFromImage("wall.jpg", 1);
+
+  shader.Use();
+  shader.SetUniformInt("texture0_sampler", 0);
+  shader.SetUniformInt("texture1_sampler", 1);
 
   while (!glfwWindowShouldClose(window.get())) {
     processInput(window.get());

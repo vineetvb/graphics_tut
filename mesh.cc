@@ -38,7 +38,6 @@ std::unique_ptr<Mesh> Mesh::Create(const std::vector<Vertex>& vertices,
   unsigned int colorAttribLocation = 1;
   unsigned int texAttribLocation = 2;
 
-
   glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo_);
   glEnableVertexAttribArray(positionAttribLocation);
   glEnableVertexAttribArray(colorAttribLocation);
@@ -51,7 +50,6 @@ std::unique_ptr<Mesh> Mesh::Create(const std::vector<Vertex>& vertices,
                         sizeof(Mesh::Vertex),
                         (void*) 0);
 
-
   glVertexAttribPointer(colorAttribLocation,
                         3,
                         GL_FLOAT,
@@ -59,7 +57,7 @@ std::unique_ptr<Mesh> Mesh::Create(const std::vector<Vertex>& vertices,
                         sizeof(Mesh::Vertex),
                         (void*) (sizeof(glm::vec3)));
 
-   glVertexAttribPointer(texAttribLocation,
+  glVertexAttribPointer(texAttribLocation,
                         2,
                         GL_FLOAT,
                         GL_FALSE,
@@ -71,24 +69,33 @@ std::unique_ptr<Mesh> Mesh::Create(const std::vector<Vertex>& vertices,
   return std::move(mesh);
 }
 
-bool Mesh::SetTextureFromImage(const std::string& image_path) {
-   // Load raw image data.
+bool Mesh::SetTextureFromImage(const std::string& image_path,
+                               int texture_unit_id) {
+  // Load raw image data.
   int width, height, nrChannels;
   unsigned char
       * data = stbi_load(image_path.c_str(), &width, &height, &nrChannels, 0);
   if (data) {
-    texture_ = std::make_unique<Texture>(data, width, height, nrChannels);
+    unsigned int texture_type = GL_RGB;
+    if(nrChannels>3)
+      texture_type = GL_RGBA;
+    texture_.push_back(std::move(
+        std::make_unique<Texture>(data, width, height, texture_unit_id, texture_type)));
+    std::cout << image_path << " has " << nrChannels << " channels.";
     stbi_image_free(data);
-  }
-  else {
+  } else {
     std::cerr << "Unable to load image file " << image_path << std::endl;
     return false;
   }
   return true;
 }
 
+void Mesh::ActivateTextureUnit(int i) const {
+    glActiveTexture(GL_TEXTURE0 + i);
+}
+
 Mesh::~Mesh() {
-  glDeleteVertexArrays(1, &vao_);
-  glDeleteBuffers(1, &vbo_);
-  glDeleteBuffers(1, &ebo_);
+  //glDeleteVertexArrays(1, &vao_);
+//  glDeleteBuffers(1, &vbo_);
+//  glDeleteBuffers(1, &ebo_);
 }

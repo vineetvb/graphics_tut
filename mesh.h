@@ -21,9 +21,13 @@ class Mesh {
   static std::unique_ptr<Mesh> Create(const std::vector<Vertex>& vertices,
       const std::vector<unsigned int>& indices);
 
-  bool SetTextureFromImage(const std::string& image_path);
+  bool SetTextureFromImage(const std::string& image_path, int texture_unit_id = 0);
+  void ActivateTextureUnit(int i) const;
 
   inline int id() const {return vao_; }
+  const Texture& GetTexture(int i) const{
+    return *texture_[i].get();
+  }
   ~Mesh();
  private:
   unsigned int vao_;
@@ -32,7 +36,7 @@ class Mesh {
 
   std::vector<Vertex> vertices_;
   std::vector<unsigned int> indices_;
-  std::unique_ptr<Texture> texture_;
+  std::vector<std::unique_ptr<Texture>> texture_;
 };
 
 

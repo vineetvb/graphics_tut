@@ -89,6 +89,19 @@ class Shader {
   void Draw(const Mesh* const mesh) const {
     glClearColor(0.2f, 1.0f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+//    mesh->ActivateTextureUnit(0);
+        glActiveTexture(GL_TEXTURE0);
+
+    SetUniformInt("texture_sampler0", 0);
+    glBindTexture(GL_TEXTURE_2D, mesh->GetTexture(0).Handle());
+
+//    mesh->ActivateTextureUnit(1);
+    glActiveTexture(GL_TEXTURE1);
+
+    SetUniformInt("texture_sampler1", 1);
+    glBindTexture(GL_TEXTURE_2D, mesh->GetTexture(1).Handle());
+
     Use();
     glBindVertexArray(mesh->id());
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
