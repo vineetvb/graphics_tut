@@ -59,6 +59,13 @@ std::unique_ptr<Mesh> Mesh::Create(const std::vector<Vertex>& vertices,
                         sizeof(Mesh::Vertex),
                         (void*) (sizeof(glm::vec3)));
 
+   glVertexAttribPointer(texAttribLocation,
+                        2,
+                        GL_FLOAT,
+                        GL_FALSE,
+                        sizeof(Mesh::Vertex),
+                        (void*) (sizeof(glm::vec3) + sizeof(glm::vec3)));
+
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ebo_);
   glBindVertexArray(0);
   return std::move(mesh);

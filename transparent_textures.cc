@@ -92,6 +92,7 @@ int main() {
   std::vector<unsigned int> indices = {0, 1, 3, 1, 2, 3};
 
   auto mesh = Mesh::Create(rectangle, indices);
+  mesh->SetTextureFromImage("wall.jpg");
 
   while (!glfwWindowShouldClose(window.get())) {
     processInput(window.get());

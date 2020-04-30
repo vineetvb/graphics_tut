@@ -14,6 +14,6 @@ texture_sampler;
 out vec4 frag_color;
 
 void main() {
-  frag_color = vec4(color, 1.0);
-//  frag_color = texture(texture_sampler, tex);
+//  frag_color = vec4(color, 1.0);
+  frag_color = texture(texture_sampler, tex) * vec4(color, 1.0);
 }
