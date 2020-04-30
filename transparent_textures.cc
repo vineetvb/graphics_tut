@@ -15,9 +15,10 @@
 #include "glm/gtc/matrix_transform.hpp" // glm::translate, glm::rotate, glm::scale, glm::perspective
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+//#include "stb_image.h"
 
 #include "shader.h"
+#include "mesh.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
   glViewport(0, 0, width, height);
@@ -70,54 +71,6 @@ std::unique_ptr<GLFWwindow, DestroyglfwWindow> CreateWindow() {
   return std::move(window);
 }
 
-struct Vertex {
-  glm::vec3 Position;
-  glm::vec3 Normal;
-  glm::vec2 TexCoords;
-};
-
-void Create2DPolygonAO(const std::vector<float>& vertices,
-                       const std::vector<unsigned int>& indices,
-                       unsigned int& vao,
-                       unsigned int& vbo,
-                       unsigned int& ebo) {
-  glGenBuffers(1, &vbo);
-  glGenBuffers(1, &ebo);
-
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER,
-               vertices.size() * sizeof(float),
-               vertices.data(),
-               GL_STATIC_DRAW);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-               indices.size() * sizeof(unsigned int),
-               indices.data(),
-               GL_STATIC_DRAW);
-
-  //unsigned int vao;
-  glGenVertexArrays(1, &vao);
-  glBindVertexArray(vao);
-
-  unsigned int positionAttribLocation = 0;
-  unsigned int colorAttribLocation = 1;
-
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glEnableVertexAttribArray(positionAttribLocation);
-  glEnableVertexAttribArray(colorAttribLocation);
-
-  glVertexAttribPointer(positionAttribLocation,
-                        3,
-                        GL_FLOAT,
-                        GL_FALSE,
-                        8 * sizeof(float),
-                        (void*) 0);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo); // necessary?
-  glBindVertexArray(0);
-}
-
 int main() {
 
   // Create Windowing Object, includes current OpenGL context binding.
@@ -126,41 +79,27 @@ int main() {
 
   Shader shader("shaders/vertex.glsl", "shaders/fragment.glsl");
 
-  // set up vertex data (and buffer(s)) and configure vertex attributes
-  std::vector<float> vertices = {
-      0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // top right
-      0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // bottom right
-      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // bottom left
-      -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f    // top left
+  std::vector<Mesh::Vertex> rectangle = {
+      {glm::vec3{0.5f, 0.5f, 0.0f}, glm::vec3{1.0f, 0.0f, 0.0f},
+       glm::vec2{1.0f, 1.0f}},
+      {glm::vec3{0.5f, -0.5f, 0.0f}, glm::vec3{0.0f, 1.0f, 0.0f},
+       glm::vec2{1.0f, 0.0f}},   // bottom right
+      {glm::vec3{-0.5f, -0.5f, 0.0f}, glm::vec3{0.0f, 0.0f, 1.0f},
+       glm::vec2{0.0f, 0.0f}},   // bottom left
+      {glm::vec3{-0.5f, 0.5f, 0.0f}, glm::vec3{1.0f, 1.0f, 0.0f},
+       glm::vec2{0.0f, 1.0f}}    // top left
   };
-  std::vector<unsigned int> indices = {  // note that we start from 0!
-      0, 1, 3,  // first Triangle
-  };
+  std::vector<unsigned int> indices = {0, 1, 3, 1, 2, 3};
 
-  unsigned int polygon1, vbo, ebo;
-  Create2DPolygonAO(vertices, indices, polygon1, vbo, ebo);
-
-  shader.use();
+  auto mesh = Mesh::Create(rectangle, indices);
 
   while (!glfwWindowShouldClose(window.get())) {
     processInput(window.get());
-
-    glClearColor(0.2f, 1.0f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    shader.use();
-
-    glBindVertexArray(polygon1);
-
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
+    shader.Draw(mesh.get());
     glfwSwapBuffers(window.get());
     glfwPollEvents();
   }
 
-  glDeleteVertexArrays(1, &polygon1);
-  glDeleteBuffers(1, &vbo);
-  glDeleteBuffers(1, &ebo);
   glfwTerminate();
   return 0;
 }

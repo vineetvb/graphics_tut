@@ -7,6 +7,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include "mesh.h"
 
 class Shader {
  public:
@@ -63,24 +64,34 @@ class Shader {
     // delete the shaders as they're linked into our program now and no longer necessary
     glDeleteShader(vertex);
     glDeleteShader(fragment);
+
+    SetTextureParameters();
   }
   // activate the shader
   // ------------------------------------------------------------------------
-  void use() {
+  void Use() const {
     glUseProgram(ID);
   }
   // utility uniform functions
   // ------------------------------------------------------------------------
-  void setBool(const std::string& name, bool value) const {
+  void SetUniformBool(const std::string& name, bool value) const {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), (int) value);
   }
   // ------------------------------------------------------------------------
-  void setInt(const std::string& name, int value) const {
+  void SetUniformInt(const std::string& name, int value) const {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
   }
   // ------------------------------------------------------------------------
-  void setFloat(const std::string& name, float value) const {
+  void SetUniformFloat(const std::string& name, float value) const {
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+  }
+
+  void Draw(const Mesh* const mesh) const {
+    glClearColor(0.2f, 1.0f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    Use();
+    glBindVertexArray(mesh->id());
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   }
 
  private:
@@ -108,6 +119,13 @@ class Shader {
                   << std::endl;
       }
     }
+  }
+
+  void SetTextureParameters() {
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MIN_FILTER,
+                    GL_LINEAR_MIPMAP_NEAREST);
   }
 };
 #endif

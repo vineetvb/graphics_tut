@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_executable(graphics_tut main.cpp glad/src/glad.c stb_image.h )
 add_executable(texture_main texture_basic.cpp glad/src/glad.c stb_image.h)
-add_executable(transparent_textures transparent_textures.cc glad/src/glad.c stb_image.h)
+add_executable(transparent_textures transparent_textures.cc mesh.cc texture.cc glad/src/glad.c stb_image.h)
 add_executable(minimal minimal.cc glad/src/glad.c stb_image.h)
 
 
