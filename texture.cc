@@ -1,8 +1,11 @@
 #include "texture.h"
 
 #include <string>
+#include <iostream>
 
 #include <glad/glad.h>
+#include <memory>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -10,11 +13,12 @@ Texture::Texture(const unsigned char* data,
                  int width,
                  int height,
                  int texture_unit_id,
-                 unsigned int texture_type) {
+                 unsigned int texture_type)
+    : texture_unit_id_(texture_unit_id) {
   // Generate texture
-  glGenTextures(1, &texture_);
+  glGenTextures(1, &texture_handle_);
   glActiveTexture(GL_TEXTURE0 + texture_unit_id);
-  glBindTexture(GL_TEXTURE_2D, texture_);
+  glBindTexture(GL_TEXTURE_2D, texture_handle_);
 
   // set the texture wrapping parameters
   glTexParameteri(GL_TEXTURE_2D,
@@ -36,4 +40,31 @@ Texture::Texture(const unsigned char* data,
   glGenerateMipmap(GL_TEXTURE_2D);
 }
 
+std::unique_ptr<Texture> Texture::CreateFromImage(const std::string& image_path,
+                                                  int texture_unit_id) {
+  int width, height, nrChannels;
+  unsigned char
+      * data = stbi_load(image_path.c_str(), &width, &height, &nrChannels, 0);
+  if (data) {
+    unsigned int texture_type = GL_RGB;
+    if (nrChannels > 3)
+      texture_type = GL_RGBA;
+    auto texture =
+        std::make_unique<Texture>(data,
+                                  width,
+                                  height,
+                                  texture_unit_id,
+                                  texture_type);
+    stbi_image_free(data);
+    return std::move(texture);
+  } else {
+    std::cerr << "Unable to load image file " << image_path << std::endl;
+    return nullptr;
+  }
+}
+  void Texture::Activate() const {
+    glActiveTexture(GL_TEXTURE0 + texture_unit_id_);
+    glBindTexture(GL_TEXTURE_2D, texture_handle_);
+  }
 
+}

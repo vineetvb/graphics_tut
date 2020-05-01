@@ -1,4 +1,3 @@
-
 #include <vector>
 
 #include <glad/glad.h>
@@ -7,7 +6,6 @@
 #include "glm/vec3.hpp" // glm::vec3
 #include "glm/vec4.hpp" // glm::vec4
 #include "glm/mat4x4.hpp" // glm::mat4
-#include "glm/gtc/matrix_transform.hpp" // glm::translate, glm::rotate, glm::scale, glm::perspective
 
 #include "shader.h"
 #include "mesh.h"
@@ -33,6 +31,7 @@ int main() {
        glm::vec2{0.0f, 0.0f}},   // bottom left
       {glm::vec4{-0.5f, 0.5f, 0.0f, 1.0f},
        glm::vec3{1.0f, 1.0f, 0.0f},
+
        glm::vec2{0.0f, 1.0f}}    // top left
   };
   std::vector<unsigned int> indices = {0, 1, 2};
@@ -43,8 +42,10 @@ int main() {
     std::cerr << "Unable to allocate GL buffers" << std::endl;
   }
 
-  mesh->SetTextureFromImage("wall.jpg");
-  mesh->SetTextureFromImage("window.png", 1);
+  std::vector<std::unique_ptr<Texture>> textures;
+
+  textures.push_back(Texture::CreateFromImage("wall.jpg", 0));
+  textures.push_back(Texture::CreateFromImage("window.png", 1));
 
   shader.Use();
   shader.SetUniformInt("texture0_sampler", 0);

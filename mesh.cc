@@ -7,6 +7,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <ext/matrix_transform.hpp>
+#include <algorithm>
 #include "glm/glm.hpp"
 
 std::unique_ptr<Mesh> Mesh::Create(const std::vector<Vertex>& vertices,
@@ -74,40 +75,25 @@ bool Mesh::AllocateGLBuffers() {
   return true;
 }
 
-bool Mesh::SetTextureFromImage(const std::string& image_path,
-                               int texture_unit_id) {
-  // Load raw image data.
-  int width, height, nrChannels;
-  unsigned char
-      * data = stbi_load(image_path.c_str(), &width, &height, &nrChannels, 0);
-  if (data) {
-    unsigned int texture_type = GL_RGB;
-    if (nrChannels > 3)
-      texture_type = GL_RGBA;
-    texture_.push_back(std::move(
-        std::make_unique<Texture>(data,
-                                  width,
-                                  height,
-                                  texture_unit_id,
-                                  texture_type)));
-    stbi_image_free(data);
-  } else {
-    std::cerr << "Unable to load image file " << image_path << std::endl;
-    return false;
-  }
-  return true;
-}
-
 void Mesh::ActivateTextureUnit(int i) const {
   glActiveTexture(GL_TEXTURE0 + i);
   glBindTexture(GL_TEXTURE_2D, GetTexture(i).Handle());
-
 }
 
 Mesh::~Mesh() {
-  //glDeleteVertexArrays(1, &vao_);
-//  glDeleteBuffers(1, &vbo_);
-//  glDeleteBuffers(1, &ebo_);
+}
+
+bool Mesh::Attach(std::unique_ptr<Mesh> another) {
+  // append vertices
+  vertices_.insert(vertices_.end(), another->vertices_.begin(), another->vertices_.end());
+  // find largest element index current mesh
+  auto largest_index = vertices_.size();
+  for(int i = 0; i < another->indices_.size(); ++i){
+    another->indices_[i] += largest_index;
+  }
+  indices_.insert(indices_.end(), another->indices_.begin(), another->indices_.end());
+
+  // dealloc buffers if any;
 }
 
 void Mesh::Translate(const glm::vec3& tvec) {
