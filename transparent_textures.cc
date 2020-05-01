@@ -33,7 +33,6 @@ int main() {
   std::vector<unsigned int> indices = {0, 1, 3, 1, 2, 3};
 
   auto mesh = Mesh::Create(rectangle, indices);
-  mesh->Translate(glm::vec3(0.5, 0.0, 2.2));
 
   if( !mesh->AllocateGLBuffers() ){
     std::cerr << "Unable to allocate GL buffers" << std::endl;
