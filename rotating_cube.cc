@@ -34,12 +34,20 @@ int main() {
   };
   std::vector<unsigned int> indices = {0, 1, 2, 2, 3, 0};
 
-  auto face_mesh = Mesh::Create(face, indices);
-  
-  if (!face_mesh->AllocateGLBuffers()) {
-    std::cerr << "Unable to allocate GL buffers" << std::endl;
-  }
+  std::vector<std::unique_ptr<Mesh>> faces;
+  auto face_bottom = Mesh::Create(face, indices);
+  auto face_top =
+      face_bottom->Clone(face_bottom.get());
+  face_top->Translate(glm::vec3(0.8, 0.8, 0.0));
 
+  faces.push_back(std::move(face_bottom));
+  faces.push_back(std::move(face_top));
+
+  for (auto& face: faces) {
+    if (!face->AllocateGLBuffers()) {
+      std::cerr << "Unable to allocate GL buffers" << std::endl;
+    }
+  }
 
   shader.Use();
   int camera_matrix_attrib_location = glGetUniformLocation(shader.ID, "camera");
@@ -51,7 +59,10 @@ int main() {
                        1,
                        GL_FALSE,
                        glm::value_ptr(camera));
-    shader.Draw(face_mesh.get());
+//    for (auto& face: faces) {
+//      shader.Draw(face.get());
+//    }
+    shader.Draw(faces[0].get(), faces[1].get());
     glfwSwapBuffers(window.get());
     glfwPollEvents();
   }

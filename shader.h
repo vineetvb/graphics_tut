@@ -94,6 +94,18 @@ class Shader {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   }
 
+    void Draw(const Mesh* const mesh1, const Mesh* const mesh2) const {
+    glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    Use();
+    glBindVertexArray(mesh2->id());
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    glBindVertexArray(mesh1->id());
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+  }
+
  private:
   // utility function for checking shader compilation/linking errors.
   // ------------------------------------------------------------------------

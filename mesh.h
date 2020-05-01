@@ -21,6 +21,7 @@ class Mesh {
 
   static std::unique_ptr<Mesh> Create(const std::vector<Vertex>& vertices,
                                       const std::vector<unsigned int>& indices);
+  static std::unique_ptr<Mesh> Clone(const Mesh* const other);
 
 //  bool SetTextureFromImage(const std::string& image_path,
 //                           int texture_unit_id = 0);
@@ -35,6 +36,8 @@ class Mesh {
     return *texture_[i];
   }
   const std::vector<Vertex> GetVertices() const { return vertices_; };
+  const std::vector<unsigned int> GetIndices() const { return indices_; };
+
   // Geometric Transformations
   void Translate(const glm::vec3& tvec);
   // Rotate CCW about +ve Xaxis.
@@ -51,7 +54,7 @@ class Mesh {
 
   std::vector<Vertex> vertices_;
   std::vector<unsigned int> indices_;
-  std::vector<const Texture* > texture_;
+  std::vector<const Texture*> texture_;
 };
 
 #endif //_MESH_H_

@@ -86,8 +86,9 @@ void Print(glm::vec4 m) {
 }
 
 void Print(glm::mat4 m) {
+  glm::mat4 n = glm::transpose(m);
   for (int i = 0; i < 3; ++i) {
-    Print(m[i]);
+    Print(n[i]);
   }
-  Print(m[3]);
+  Print(n[3]);
 }

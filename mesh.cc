@@ -20,6 +20,15 @@ std::unique_ptr<Mesh> Mesh::Create(const std::vector<Vertex>& vertices,
   return std::move(mesh);
 }
 
+std::unique_ptr<Mesh> Mesh::Clone(const Mesh* const other) {
+  auto mesh = std::make_unique<Mesh>();
+  mesh->vertices_.clear();
+  mesh->vertices_ = other->GetVertices();
+  mesh->indices_.clear();
+  mesh->indices_ = other->GetIndices();
+  return std::move(mesh);
+}
+
 bool Mesh::AllocateGLBuffers() {
    glGenBuffers(1, &vbo_);
   glGenBuffers(1, &ebo_);
@@ -118,3 +127,4 @@ void Mesh::RotateZ(float rz) {
     v.Position = tf * v.Position;
   }
 }
+
