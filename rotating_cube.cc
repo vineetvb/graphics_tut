@@ -40,8 +40,14 @@ int main() {
       face_bottom->Clone(face_bottom.get());
   face_top->Translate(glm::vec3(0.8, 0.8, 0.0));
 
+  auto face_left =
+      face_bottom->Clone(face_bottom.get());
+  face_left->Translate(glm::vec3(-0.8, 0.8, 0.0));
+
+
   faces.push_back(std::move(face_bottom));
   faces.push_back(std::move(face_top));
+  faces.push_back(std::move(face_left));
 
   for (auto& face: faces) {
     if (!face->AllocateGLBuffers()) {
@@ -62,7 +68,8 @@ int main() {
 //    for (auto& face: faces) {
 //      shader.Draw(face.get());
 //    }
-    shader.Draw(faces[0].get(), faces[1].get());
+//    shader.Draw(faces[0].get(), faces[1].get());
+    shader.Draw(faces);
     glfwSwapBuffers(window.get());
     glfwPollEvents();
   }
