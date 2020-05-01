@@ -75,11 +75,6 @@ bool Mesh::AllocateGLBuffers() {
   return true;
 }
 
-void Mesh::ActivateTextureUnit(int i) const {
-  glActiveTexture(GL_TEXTURE0 + i);
-  glBindTexture(GL_TEXTURE_2D, GetTexture(i).Handle());
-}
-
 Mesh::~Mesh() {
 }
 

@@ -29,12 +29,12 @@ int main() {
       {glm::vec4{-0.5f, -0.5f, 0.0f, 1.0f},
        glm::vec3{0.0f, 0.0f, 1.0f},
        glm::vec2{0.0f, 0.0f}},   // bottom left
-      {glm::vec4{-0.5f, 0.5f, 0.0f, 1.0f},
+      {glm::vec4{0.0f, 0.5f, 0.0f, 1.0f},
        glm::vec3{1.0f, 1.0f, 0.0f},
 
        glm::vec2{0.0f, 1.0f}}    // top left
   };
-  std::vector<unsigned int> indices = {0, 1, 2};
+  std::vector<unsigned int> indices = {0, 1, 2, 0, 1, 3};
 
   auto mesh = Mesh::Create(rectangle, indices);
 
@@ -46,6 +46,8 @@ int main() {
 
   textures.push_back(Texture::CreateFromImage("wall.jpg", 0));
   textures.push_back(Texture::CreateFromImage("window.png", 1));
+  textures.push_back(Texture::CreateFromImage("face.jpg", 0));
+  textures.push_back(Texture::CreateFromImage("bike.jpg", 1));
 
   shader.Use();
   shader.SetUniformInt("texture0_sampler", 0);
@@ -57,6 +59,12 @@ int main() {
   // Simple parameter to make the triangle perform SHM.
   float s = 0.0;
 
+  textures[2]->Activate();
+  textures[1]->Activate();
+
+  textures[0]->SetTextureUnitId(1);
+  textures[0]->Activate();
+
   while (!glfwWindowShouldClose(window.get())) {
     processInput(window.get());
     glUniformMatrix4fv(camera_matrix_attrib_location,
@@ -64,8 +72,9 @@ int main() {
                        GL_FALSE,
                        glm::value_ptr(camera));
     // triangle top is performing SHM.
-    camera[3][1] = std::cos(s);  // xtrans
+    camera[3][1] = 0.5 * std::cos(s);  // xtrans
     s += 0.01;
+
     shader.Draw(mesh.get());
     glfwSwapBuffers(window.get());
     glfwPollEvents();

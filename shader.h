@@ -89,8 +89,6 @@ class Shader {
   void Draw(const Mesh* const mesh) const {
     glClearColor(0.0f, 0.0f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-//    mesh->ActivateTextureUnit(0);
-//    mesh->ActivateTextureUnit(1);
     Use();
     glBindVertexArray(mesh->id());
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

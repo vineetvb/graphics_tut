@@ -14,7 +14,9 @@ class Texture {
           int texture_unit_id,
           unsigned int texture_type = GL_RGB);
   inline int Handle() const { return texture_handle_; };
-  void Texture::Activate() const;
+  void Activate() const;
+  void SetTextureUnitId(unsigned int new_id);
+
  private:
   unsigned int texture_handle_;
   unsigned int texture_unit_id_;

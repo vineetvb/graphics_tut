@@ -17,8 +17,8 @@ Texture::Texture(const unsigned char* data,
     : texture_unit_id_(texture_unit_id) {
   // Generate texture
   glGenTextures(1, &texture_handle_);
-  glActiveTexture(GL_TEXTURE0 + texture_unit_id);
-  glBindTexture(GL_TEXTURE_2D, texture_handle_);
+
+  Activate();
 
   // set the texture wrapping parameters
   glTexParameteri(GL_TEXTURE_2D,
@@ -62,9 +62,13 @@ std::unique_ptr<Texture> Texture::CreateFromImage(const std::string& image_path,
     return nullptr;
   }
 }
-  void Texture::Activate() const {
-    glActiveTexture(GL_TEXTURE0 + texture_unit_id_);
-    glBindTexture(GL_TEXTURE_2D, texture_handle_);
-  }
 
+void Texture::Activate() const {
+  glActiveTexture(GL_TEXTURE0 + texture_unit_id_);
+  glBindTexture(GL_TEXTURE_2D, texture_handle_);
 }
+
+void Texture::SetTextureUnitId(unsigned int new_id){
+  texture_unit_id_ = new_id;
+}
+
