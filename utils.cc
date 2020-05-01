@@ -1,6 +1,9 @@
 #include "utils.h"
 
 #include <iostream>
+#include <ext.hpp>
+
+#include "mesh.h"
 
 /* Utilities related to GLFW windows and such.
  *
@@ -43,4 +46,48 @@ std::unique_ptr<GLFWwindow, DestroyglfwWindow> CreateWindow() {
   }
 
   return std::move(window);
+}
+
+
+// Printing Utils
+
+void Print(const Mesh::Vertex& v) {
+
+  char buff[100];
+  snprintf(buff,
+           sizeof(buff),
+           "(%f %f %f)",
+           v.Position.x,
+           v.Position.y,
+           v.Position.z);
+  std::string buffAsStdStr = buff;
+  std::cout << buffAsStdStr << std::endl;
+}
+
+void Print(const std::vector<Mesh::Vertex>& vertices) {
+  std::cout << std::endl;
+  for (auto& v : vertices) {
+    Print(v);
+  }
+  std::cout << std::endl;
+}
+//
+void Print(const Mesh& mesh) {
+  Print(mesh.GetVertices());
+}
+
+void Print(glm::vec4 m) {
+  std::cout << "[ ";
+  for (int j = 0; j < 3; ++j) {
+    std::cout << m[j] << ", ";
+  }
+  std::cout << m[3];
+  std::cout << "]" << std::endl;
+}
+
+void Print(glm::mat4 m) {
+  for (int i = 0; i < 3; ++i) {
+    Print(m[i]);
+  }
+  Print(m[3]);
 }

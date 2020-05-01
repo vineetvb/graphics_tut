@@ -90,7 +90,6 @@ bool Mesh::SetTextureFromImage(const std::string& image_path,
                                   height,
                                   texture_unit_id,
                                   texture_type)));
-    std::cout << image_path << " has " << nrChannels << " channels.";
     stbi_image_free(data);
   } else {
     std::cerr << "Unable to load image file " << image_path << std::endl;
