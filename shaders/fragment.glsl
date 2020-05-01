@@ -13,8 +13,6 @@ texture0_sampler;
 uniform sampler2D
 texture1_sampler;
 
-uniform vec2 timeColor;
-
 // Outputs.
 out vec4 frag_color;
 

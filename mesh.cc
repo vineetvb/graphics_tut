@@ -16,13 +16,10 @@ std::unique_ptr<Mesh> Mesh::Create(const std::vector<Vertex>& vertices,
   mesh->vertices_ = vertices;
   mesh->indices_.clear();
   mesh->indices_ = indices;
-
-
   return std::move(mesh);
 }
 
 bool Mesh::AllocateGLBuffers() {
-
    glGenBuffers(1, &vbo_);
   glGenBuffers(1, &ebo_);
 
