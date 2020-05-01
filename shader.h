@@ -87,7 +87,7 @@ class Shader {
   }
 
   void Draw(const Mesh* const mesh) const {
-    glClearColor(0.0f, 0.0f, 0.1f, 1.0f);
+    glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     Use();
     glBindVertexArray(mesh->id());
