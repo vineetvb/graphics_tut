@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <ext.hpp>
+#include <iomanip>
 
 #include "mesh.h"
 
@@ -52,12 +53,12 @@ std::unique_ptr<GLFWwindow, DestroyglfwWindow> CreateWindow() {
 
 
 void Print(glm::vec4 m) {
-  std::cout << "[ ";
+  std::cout << "\t[ \t ";
   for (int j = 0; j < 3; ++j) {
-    std::cout << m[j] << ", ";
+    std::cout  << std::setprecision(2) << m[j] << " \t \t";
   }
   std::cout << m[3];
-  std::cout << "]" << std::endl;
+  std::cout << " \t ]" << std::endl;
 }
 
 void Print(glm::mat4 m) {
@@ -66,6 +67,7 @@ void Print(glm::mat4 m) {
     Print(n[i]);
   }
   Print(n[3]);
+  std::cout << std::endl;
 }
 
 // Printing Utils

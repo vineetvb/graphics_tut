@@ -11,6 +11,8 @@
 #include "utils.h"
 
 constexpr double DEG_TO_RADIANS = 3.14159265 / 180.0;
+using std::cout;
+using std::endl;
 
 int main() {
 
@@ -42,47 +44,6 @@ int main() {
   auto test_mesh = Mesh::Create(test_face, test_indices);
   test_mesh->AllocateGLBuffers();
 
-  std::vector<Mesh::Vertex> face = {
-      {glm::vec4{0.0f, 0.0f, 0.0f, 1.0f},
-       glm::vec3{1.0f, 0.0f, 0.0f},
-       glm::vec2{1.0f, 1.0f}},
-      {glm::vec4{0.5f, 0.0f, 0.0f, 1.0f},
-       glm::vec3{0.0f, 1.0f, 0.0f},
-       glm::vec2{1.0f, 0.0f}},   // bottom right
-      {glm::vec4{0.5f, 0.5f, 0.0f, 1.0f},
-       glm::vec3{0.0f, 0.0f, 1.0f},
-       glm::vec2{0.0f, 0.0f}},   // bottom left
-      {glm::vec4{0.0f, 0.5f, 0.0f, 1.0f},
-       glm::vec3{1.0f, 1.0f, 0.0f},
-       glm::vec2{0.0f, 1.0f}}    // top left
-  };
-
-  std::vector<unsigned int> indices = {0, 1, 2};
-
-  std::vector<std::unique_ptr<Mesh>> faces;
-  auto face_bottom = Mesh::Create(face, indices);
-  auto face_top =
-      face_bottom->Clone(face_bottom.get());
-  face_top->Translate(glm::vec3(0.0, 0.0, 1.0));
-
-  auto face_left =
-      face_bottom->Clone(face_bottom.get());
-  face_left->RotateX(90.0 * DEG_TO_RADIANS);
-
-  auto face_right = Mesh::Clone(face_left.get());
-  face_right->Translate(glm::vec3(0.0, 1.0, 0.0));
-
-  faces.push_back(std::move(face_bottom));
-//  faces.push_back(std::move(face_top));
-//  faces.push_back(std::move(face_left));
-//  faces.push_back(std::move(face_right));
-
-  for (auto& face: faces) {
-    if (!face->AllocateGLBuffers()) {
-      std::cerr << "Unable to allocate GL buffers" << std::endl;
-    }
-  }
-
   shader.Use();
   unsigned int
       camera_matrix_attrib_location = glGetUniformLocation(shader.ID, "camera");
@@ -95,11 +56,14 @@ int main() {
 //  Print(camera);
 
   glm::mat4 proj1, proj2;
-  proj1 = glm::mat4(1.0f);
+  proj1 = glm::perspective(1.0, 4.0/3.0, 0.1, 1000.0);
+  std::cout << "Projection Matrix : " <<std::endl;
+  Print(proj1);
+
   proj2 = glm::mat4(1.0f);
 
-  glm::mat4 proj = proj2;
-  proj[3][3] = 0.0f;
+  glm::mat4 proj = proj1;
+//  proj[3][3] = 0.0f;
   Print(proj);
 
   glUniformMatrix4fv(proj_matrix_attrib_location,
@@ -112,9 +76,7 @@ int main() {
                      GL_FALSE,
                      glm::value_ptr(camera));
 
-//  Print(proj1 * camera * faces[0]->GetVertices()[0].Position);
-//  Print(proj1 * camera * faces[0]->GetVertices()[1].Position);
-//  Print(proj1 * camera * faces[0]->GetVertices()[2].Position);
+
 //  Print(proj1 * camera);
 //  Print((proj1 * camera) * test_mesh->GetVertices()[0].Position);
 //  Print((proj1 * camera) * test_mesh->GetVertices()[1].Position);
