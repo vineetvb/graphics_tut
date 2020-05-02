@@ -49,32 +49,7 @@ std::unique_ptr<GLFWwindow, DestroyglfwWindow> CreateWindow() {
 }
 
 
-// Printing Utils
 
-void Print(const Mesh::Vertex& v) {
-
-  char buff[100];
-  snprintf(buff,
-           sizeof(buff),
-           "(%f %f %f)",
-           v.Position.x,
-           v.Position.y,
-           v.Position.z);
-  std::string buffAsStdStr = buff;
-  std::cout << buffAsStdStr << std::endl;
-}
-
-void Print(const std::vector<Mesh::Vertex>& vertices) {
-  std::cout << std::endl;
-  for (auto& v : vertices) {
-    Print(v);
-  }
-  std::cout << std::endl;
-}
-//
-void Print(const Mesh& mesh) {
-  Print(mesh.GetVertices());
-}
 
 void Print(glm::vec4 m) {
   std::cout << "[ ";
@@ -91,4 +66,32 @@ void Print(glm::mat4 m) {
     Print(n[i]);
   }
   Print(n[3]);
+}
+
+// Printing Utils
+
+void Print(const Mesh::Vertex& v) {
+  Print(v.Position);
+//  char buff[100];
+//  snprintf(buff,
+//           sizeof(buff),
+//           "(%f %f %f)",
+//           v.Position.x,
+//           v.Position.y,
+//           v.Position.z,
+//           v.);
+//  std::string buffAsStdStr = buff;
+//  std::cout << buffAsStdStr << std::endl;
+}
+
+void Print(const std::vector<Mesh::Vertex>& vertices) {
+  std::cout << std::endl;
+  for (auto& v : vertices) {
+    Print(v);
+  }
+  std::cout << std::endl;
+}
+//
+void Print(const Mesh& mesh) {
+  Print(mesh.GetVertices());
 }

@@ -14,7 +14,7 @@ out vec3 color;
 out vec2 tex;
 
 void main(){
-    gl_Position = camera * vec4(inPos, 1.0);
+    gl_Position = proj * camera * vec4(inPos, 1.0);
 //    gl_Position = vec4(inPos, 1.0);
     color = inColor;
     tex = inTex;
