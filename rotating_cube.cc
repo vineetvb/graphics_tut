@@ -27,7 +27,7 @@ int main() {
   float test_w = 1.0;
   std::vector<Mesh::Vertex> test_face = {
       {glm::vec4{0.0f, 0.0f, test_z, test_w},
-       glm::vec3{1.0f, 0.0f, 0.0f},
+       glm::vec3{1.0f, 1.0f, 1.0f},
        glm::vec2{1.0f, 1.0f}},
       {glm::vec4{test_x, 0.0f, test_z + 0.5, test_w},
        glm::vec3{0.0f, 1.0f, 0.0f},
@@ -39,7 +39,8 @@ int main() {
        glm::vec3{1.0f, 1.0f, 0.0f},
        glm::vec2{0.0f, 1.0f}}    // top left
   };
-  std::vector<unsigned int> test_indices = {0, 1, 2};
+//  std::vector<unsigned int> test_indices = {0, 1, 2};
+  std::vector<unsigned int> test_indices = {0, 1, 2, 2, 3, 0};
 
   auto test_mesh = Mesh::Create(test_face, test_indices);
   test_mesh->AllocateGLBuffers();
@@ -52,19 +53,21 @@ int main() {
 
   glm::mat4 camera;
   camera = glm::mat4(1.0);
-  camera = glm::translate(camera, glm::vec3(0.1, 0.2, 0.1));
+  camera = glm::translate(camera, glm::vec3(0.0, 0.0, -2.2));
 //  Print(camera);
 
   glm::mat4 proj1, proj2;
   proj1 = glm::perspective(1.0, 4.0/3.0, 0.1, 1000.0);
-  std::cout << "Projection Matrix : " <<std::endl;
+  std::cout << "Projection Matrix 1 : " <<std::endl;
   Print(proj1);
 
   proj2 = glm::mat4(1.0f);
+  std::cout << "Projection Matrix 2 : " <<std::endl;
+  Print(proj2);
+
 
   glm::mat4 proj = proj1;
-//  proj[3][3] = 0.0f;
-  Print(proj);
+
 
   glUniformMatrix4fv(proj_matrix_attrib_location,
                      1,
@@ -77,25 +80,17 @@ int main() {
                      glm::value_ptr(camera));
 
 
-//  Print(proj1 * camera);
-//  Print((proj1 * camera) * test_mesh->GetVertices()[0].Position);
-//  Print((proj1 * camera) * test_mesh->GetVertices()[1].Position);
-//  Print(proj1 * camera * test_mesh->GetVertices()[2].Position);
   std::cout << std::endl;
-  Print(proj2 * camera);
-  Print(proj2 * camera * test_mesh->GetVertices()[0].Position);
-  Print(proj2 * camera * test_mesh->GetVertices()[1].Position);
-  Print(proj2 * camera * test_mesh->GetVertices()[2].Position);
-//  Print(test_mesh->GetVertices());
-//
+  Print(proj * camera);
+  auto vertices = test_mesh->GetVertices();
+  for(auto& v : vertices) {
+    Print(proj * camera * v.Position);
+  }
+
   while (!glfwWindowShouldClose(window.get())) {
     processInput(window.get());
     shader.Use();
-
-
-//    shader.Draw(faces);
     shader.Draw(test_mesh.get());
-//    shader.Draw(faces[0].get());
     glfwSwapBuffers(window.get());
     glfwPollEvents();
   }
